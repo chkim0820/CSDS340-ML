@@ -10,9 +10,9 @@ class Perceptron:
     def __init__(self):
         self.features = ["Pregnancies", "Glucose", "BloodPressure", "SkinThickness", 
                          "Insulin", "BMI", "DiabetesPedigreeFunction", "Age", "Class"]
-        self.weights = [random.random()] * len(self.features)
+        self.weights = [random.random() * 0.1] * len(self.features) 
         self.bias = random.random() * 0.1
-        self.learningRate = random.random() * 0.1
+        self.learningRate = random.random()
 
     def prediction(self, data):
         predictions = []
@@ -53,14 +53,24 @@ class Perceptron:
         weights = self.updateWeights(results, data) # outputs are the class labels
         bias = self.updateBias(results, data["Class"])
         return weights, bias
+    
+    def accuracyRate(self, actual, calculated):
+        num = 0
+        for i in range(len(actual)):
+            if (actual[i] == calculated[i]):
+                num += 1
+        return (num / len(actual))
 
-    def main(self):
-        # Running the main method once is one epoch
-        data = pd.read_csv('pima-indians-diabetes.csv', names=self.features)
-        predictions = self.prediction(data)
-        outputs = self.threshold(predictions)
-        self.weights, self.bias = self.learningAlgorithm(outputs, data)
+    def main(self, iter):
+        while (accuracy != 1):
+            # Running the main method once is one epoch
+            data = pd.read_csv('pima-indians-diabetes.csv', names=self.features)
+            predictions = self.prediction(data)
+            outputs = self.threshold(predictions)
+            self.weights, self.bias = self.learningAlgorithm(outputs, data)
+            accuracy = self.accuracyRate(data["Class"], outputs)
+        print(outputs)
 
 if __name__ == "__main__":
     training = Perceptron()
-    training.main()
+    training.main(100)
