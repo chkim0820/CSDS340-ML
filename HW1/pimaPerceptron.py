@@ -19,11 +19,13 @@ class Perceptron:
     # Initial prediction; z = w^T * w + b
     def prediction(self, data):
         predictions = [] # Prediction for each sample
-        for i in (range(len(data))): # for each sample
-            net = 0
+        # For each sample
+        for i in (range(len(data))):
+            net = 0 # The z value; z = w^T * w + b
+            # For each feature
             for j in (range(len(self.features))):
                 net += self.weights[j] * (data.iloc[i, j])
-            predictions.append(net + self.bias)
+            predictions.append(net + self.bias) # add bias at the end of the 
         return predictions
 
     # For executing the threshold function
