@@ -12,7 +12,7 @@ class Perceptron:
                          "Insulin", "BMI", "DiabetesPedigreeFunction", "Age", "Class"]
         self.weights = [random.random() * 0.1] * len(self.features) 
         self.bias = random.random() * 0.1
-        self.learningRate = random.random()
+        self.learningRate = 0.1
 
     def prediction(self, data):
         predictions = []
@@ -62,6 +62,7 @@ class Perceptron:
         return (num / len(actual))
 
     def main(self, iter):
+        accuracy = 0
         while (accuracy != 1):
             # Running the main method once is one epoch
             data = pd.read_csv('pima-indians-diabetes.csv', names=self.features)
@@ -73,4 +74,4 @@ class Perceptron:
 
 if __name__ == "__main__":
     training = Perceptron()
-    training.main(100)
+    training.main(15)
