@@ -12,9 +12,9 @@ class Perceptron:
     def __init__(self):
         self.features = ["Pregnancies", "Glucose", "BloodPressure", "SkinThickness", 
                          "Insulin", "BMI", "DiabetesPedigreeFunction", "Age", "Class"]
-        self.weights = [0] * (len(self.features) - 1) # Exclude "Class"
-        self.bias = 0
-        self.learningRate = 0.1
+        self.weights = [0.1] * (len(self.features) - 1) # Exclude "Class"
+        self.bias = 0.1
+        self.learningRate = 0.0000008
 
     # Initial prediction; z = w^T * x + b
     def prediction(self, data):
@@ -78,7 +78,7 @@ class Perceptron:
                 outputs.append(output) # Add to the list of predicted outputs
             accuracy = self.accuracyRate(data["Class"], outputs)
             epoch -= 1
-        print(accuracy)
+            print(accuracy)
 
 # Main function; for running the Perceptron class
 # Input the desired number of epochs
