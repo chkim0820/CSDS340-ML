@@ -3,7 +3,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import random
 
 # Class Perceptron for running the Perceptron algorithm
 class Perceptron:
@@ -17,11 +16,11 @@ class Perceptron:
         self.learningRate = 0.0000008
 
     # Initial prediction; z = w^T * x + b
-    def prediction(self, data):
+    def prediction(self, sample):
         net = 0 # The prediction value (z)
         # For each feature; exclude the actual output ("Class")
         for j in (range(len(self.features) - 1)): # w^T * x
-            net += self.weights[j] * (data[j]) # jth feature
+            net += self.weights[j] * (sample[j]) # jth feature
         net = net + self.bias # Add bias
         return net
 
@@ -36,17 +35,16 @@ class Perceptron:
     # For updating the weights
     def updateWeights(self, result, data):
         newWeights = self.weights.copy()
+        actual = data[len(self.features) - 1] # actual output for ith sample
         # For each feature; exclude the actual output column
         for j in (range(len(self.features) - 1)):
-            actual = data[len(self.features) - 1] # actual output for ith sample
             change = self.learningRate * (actual - result) * data[j]
             newWeights[j] = newWeights[j] + change # update for jth feature
         return newWeights
     
     # For updating the bias
     def updateBias(self, predicted, actual):
-        change = self.learningRate * (actual - predicted)
-        newBias = self.bias + change
+        newBias = self.learningRate * (actual - predicted) + self.bias
         return newBias
     
     # Learning algorithm; for updating parameters
@@ -57,12 +55,12 @@ class Perceptron:
     
     # Calculates the rate of correct classification out of all
     def accuracyRate(self, actual, calculated):
-        num = 0 # Stores the number of correct predictions
+        accurate = 0 # Stores the number of correct predictions
         # For each sample
         for i in range(len(actual)):
             if (actual[i] == calculated[i]): # Predicted = actual
-                num += 1
-        return (num / len(actual)) # ratio of correct predictions out of entire data
+                accurate += 1
+        return (accurate / len(actual)) # ratio of correct predictions out of entire data
 
     # Plot the accuracy rates for each epoch
     def plotGraph(self, accuracyRates):
@@ -84,8 +82,8 @@ class Perceptron:
                 output = self.threshold(prediction)
                 self.weights, self.bias = self.learningAlgorithm(output, data.loc[i])
                 outputs.append(output) # Add to the list of predicted outputs
-            accuracy = self.accuracyRate(data["Class"], outputs)
-            accuracyList.append(accuracy)
+            accuracyRate = self.accuracyRate(data["Class"], outputs)
+            accuracyList.append(accuracyRate)
             epoch -= 1
         self.plotGraph(accuracyList) # Plot the accuracy rate for each epoch
 
