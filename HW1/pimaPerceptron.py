@@ -63,7 +63,6 @@ class Perceptron:
             if (actual[i] == calculated[i]):
                 num += 1
         return (num / len(actual)) # ratio of correct predictions out of entire data
-    
 
     # Plot the accuracy rates for each epoch
     def plotGraph(self, accuracyRates):
@@ -72,8 +71,6 @@ class Perceptron:
         plt.ylabel('Accuracy Rates')
         plt.title("Accuracy Rates of the Model over Epochs")
         plt.show()
-
-
 
     # Main function; running this method once is one epoch
     def main(self, epoch):
