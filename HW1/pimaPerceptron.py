@@ -34,12 +34,12 @@ class Perceptron:
     
     # For updating the weights
     def updateWeights(self, result, data):
-        newWeights = self.weights.copy()
+        newWeights = self.weights.copy() # Take current weights
         actual = data[len(self.features) - 1] # actual output for ith sample
         # For each feature; exclude the actual output column
         for j in (range(len(self.features) - 1)):
             change = self.learningRate * (actual - result) * data[j]
-            newWeights[j] = newWeights[j] + change # update for jth feature
+            newWeights[j] = newWeights[j] + change # update weight for jth feature
         return newWeights
     
     # For updating the bias
@@ -58,7 +58,7 @@ class Perceptron:
         accurate = 0 # Stores the number of correct predictions
         # For each sample
         for i in range(len(actual)):
-            if (actual[i] == calculated[i]): # Predicted = actual
+            if (actual[i] == calculated[i]): # Predicted == actual
                 accurate += 1
         return (accurate / len(actual)) # ratio of correct predictions out of entire data
 
@@ -82,7 +82,7 @@ class Perceptron:
                 output = self.threshold(prediction)
                 self.weights, self.bias = self.learningAlgorithm(output, data.loc[i])
                 outputs.append(output) # Add to the list of predicted outputs
-            accuracyRate = self.accuracyRate(data["Class"], outputs)
+            accuracyRate = self.accuracyRate(data["Class"], outputs) # Calculate the accuracy of this epoch
             accuracyList.append(accuracyRate)
             epoch -= 1
         self.plotGraph(accuracyList) # Plot the accuracy rate for each epoch
