@@ -60,7 +60,7 @@ class Perceptron:
         num = 0 # Stores the number of correct predictions
         # For each sample
         for i in range(len(actual)):
-            if (actual[i] == calculated[i]):
+            if (actual[i] == calculated[i]): # Predicted = actual
                 num += 1
         return (num / len(actual)) # ratio of correct predictions out of entire data
 
@@ -76,7 +76,7 @@ class Perceptron:
     def main(self, epoch):
         data = pd.read_csv('pima-indians-diabetes.csv', names=self.features)
         accuracyList = []
-        while (epoch >= 0):
+        while (epoch > 0):
             outputs = []
             # For each sample
             for i in (range(len(data))):
