@@ -18,53 +18,41 @@ class Perceptron:
 
     # Initial prediction; z = w^T * x + b
     def prediction(self, data):
-        predictions = [] # Stores the predictions for each sample
-        # For each training sample
-        for i in (range(len(data))):
-            net = 0 # The z value; z = w^T * x + b
-            # For each feature; exclude the actual output ("Class")
-            for j in (range(len(self.features) - 1)): # w^T * x
-                net += self.weights[j] * (data.iloc[i, j]) # jth feature
-            net = net + self.bias # Add bias
-            predictions.append(net)
-        return predictions
+        net = 0 # The prediction value (z)
+        # For each feature; exclude the actual output ("Class")
+        for j in (range(len(self.features) - 1)): # w^T * x
+            net += self.weights[j] * (data[j]) # jth feature
+        net = net + self.bias # Add bias
+        return net
 
     # For executing the threshold function
-    def threshold(self, data):
-        results = [] # Store the predicted outputs for each sample
+    def threshold(self, prediction):
         # For each training sample
-        for i in (range(len(data))):
-            if (data[i] >= 0): # Perceptron fires
-                results.append(1)
-            else: # Perceptron does not fire
-                results.append(0)
-        return results
+        if (prediction >= 0): # Perceptron fires
+            return 1
+        else: # Perceptron does not fire
+            return 0
     
     # For updating the weights
-    def updateWeights(self, results, data):
+    def updateWeights(self, result, data):
         newWeights = self.weights.copy()
-        # For each training sample
-        for i in (range(len(data))):
-            # For each feature; exclude the actual output column
-            for j in (range(len(self.features) - 1)):
-                actual = data.iloc[i, len(self.features) - 1] # actual output for ith sample
-                change = self.learningRate * (actual - results[i]) * data.iloc[i, j]
-                newWeights[j] = newWeights[j] + change # update for jth feature
+        # For each feature; exclude the actual output column
+        for j in (range(len(self.features) - 1)):
+            actual = data[len(self.features) - 1] # actual output for ith sample
+            change = self.learningRate * (actual - result) * data[j]
+            newWeights[j] = newWeights[j] + change # update for jth feature
         return newWeights
     
     # For updating the bias
-    def updateBias(self, results, data):
-        newBias = self.bias
-        # For each training sample
-        for i in (range(len(data))): # for each sample
-            change = self.learningRate * (data[i] - results[i])
-            newBias = newBias + change
+    def updateBias(self, predicted, actual):
+        change = self.learningRate * (actual - predicted)
+        newBias = self.bias + change
         return newBias
     
     # Learning algorithm; for updating parameters
-    def learningAlgorithm(self, predictions, data):
-        weights = self.updateWeights(predictions, data)
-        bias = self.updateBias(predictions, data["Class"])
+    def learningAlgorithm(self, prediction, data):
+        weights = self.updateWeights(prediction, data)
+        bias = self.updateBias(prediction, data["Class"])
         return weights, bias
     
     # Calculates the rate of correct classification out of all
@@ -77,19 +65,23 @@ class Perceptron:
         return (num / len(actual)) # ratio of correct predictions out of entire data
 
     # Main function; running this method once is one epoch
-    def main(self, iter=None):
-        accuracy = 0
+    def main(self, epoch):
         data = pd.read_csv('pima-indians-diabetes.csv', names=self.features)
-        while (iter >= 0):
-            predictions = self.prediction(data) # contains output to z = wx + b
-            outputs = self.threshold(predictions)
-            self.weights, self.bias = self.learningAlgorithm(outputs, data)
+        accuracy = 0
+        while (epoch >= 0):
+            outputs = []
+            # For each sample
+            for i in (range(len(data))):
+                prediction = self.prediction(data.loc[i]) # contains output to z = wx + b
+                output = self.threshold(prediction)
+                self.weights, self.bias = self.learningAlgorithm(output, data.loc[i])
+                outputs.append(output) # Add to the list of predicted outputs
             accuracy = self.accuracyRate(data["Class"], outputs)
-            iter -= 1
-            print(accuracy)
+            epoch -= 1
+        print(accuracy)
 
 # Main function; for running the Perceptron class
 # Input the desired number of epochs
 if __name__ == "__main__":
     training = Perceptron()
-    training.main(20) # Specify the number of epochs
+    training.main(100) # Specify the number of epochs
