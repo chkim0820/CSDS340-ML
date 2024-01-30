@@ -63,11 +63,22 @@ class Perceptron:
             if (actual[i] == calculated[i]):
                 num += 1
         return (num / len(actual)) # ratio of correct predictions out of entire data
+    
+
+    # Plot the accuracy rates for each epoch
+    def plotGraph(self, accuracyRates):
+        plt.plot(accuracyRates)
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy Rates')
+        plt.title("Accuracy Rates of the Model over Epochs")
+        plt.show()
+
+
 
     # Main function; running this method once is one epoch
     def main(self, epoch):
         data = pd.read_csv('pima-indians-diabetes.csv', names=self.features)
-        accuracy = 0
+        accuracyList = []
         while (epoch >= 0):
             outputs = []
             # For each sample
@@ -77,8 +88,9 @@ class Perceptron:
                 self.weights, self.bias = self.learningAlgorithm(output, data.loc[i])
                 outputs.append(output) # Add to the list of predicted outputs
             accuracy = self.accuracyRate(data["Class"], outputs)
+            accuracyList.append(accuracy)
             epoch -= 1
-            print(accuracy)
+        self.plotGraph(accuracyList) # Plot the accuracy rate for each epoch
 
 # Main function; for running the Perceptron class
 # Input the desired number of epochs
