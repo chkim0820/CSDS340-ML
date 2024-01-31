@@ -60,20 +60,21 @@ class Perceptron:
         for i in range(len(actual)):
             if (actual[i] == calculated[i]): # Predicted == actual
                 accurate += 1
-        return (accurate / len(actual)) # ratio of correct predictions out of entire data
+        misclassified = len(actual) - accurate
+        return misclassified, (accurate / len(actual)) # ratio of correct predictions out of entire data
 
-    # Plot the accuracy rates for each epoch
+    # Plot the number of misclassification errors for each epoch
     def plotGraph(self, accuracyRates):
         plt.plot(accuracyRates)
         plt.xlabel('Epochs')
-        plt.ylabel('Accuracy Rates')
-        plt.title("Accuracy Rates of the Model over Epochs")
+        plt.ylabel('# Misclassifications')
+        plt.title("Number of Misclassification Errors over Epochs")
         plt.show()
 
     # Main function; running this method once is one epoch
     def main(self, epoch):
         data = pd.read_csv('pima-indians-diabetes.csv', names=self.features)
-        accuracyList = []
+        misclassificationList = []
         while (epoch > 0):
             outputs = []
             # For each sample
@@ -82,10 +83,10 @@ class Perceptron:
                 output = self.threshold(prediction)
                 self.weights, self.bias = self.learningAlgorithm(output, data.loc[i])
                 outputs.append(output) # Add to the list of predicted outputs
-            accuracyRate = self.accuracyRate(data["Class"], outputs) # Calculate the accuracy of this epoch
-            accuracyList.append(accuracyRate)
+            misclassified, accuracyRate = self.accuracyRate(data["Class"], outputs) # Calculate the accuracy of this epoch
+            misclassificationList.append(misclassified)
             epoch -= 1
-        self.plotGraph(accuracyList) # Plot the accuracy rate for each epoch
+        self.plotGraph(misclassificationList) # Plot the accuracy rate for each epoch
 
 # Main function; for running the Perceptron class
 # Input the desired number of epochs
