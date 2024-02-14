@@ -4,10 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Class SVM for running the SVM algorithm
+# Class LogisticRegression for running the Logistic Regression algorithm
 class LogisticRegression:
 
-    # Initializing class variables for SVM
+    # Initializing class variables for LogisticRegression class
     def __init__(self):
         print()
 
@@ -18,7 +18,7 @@ class LogisticRegression:
 # Class SVM for running the SVM algorithm
 class SVM:
 
-    # Initializing class variables for SVM
+    # Initializing class variables for SVM class
     def __init__(self):
         print()
 
@@ -31,4 +31,5 @@ class SVM:
 if __name__ == "__main__":
     SVMTraining = SVM()
     LRTraining = LogisticRegression()
-    SVMTraining.main(10) # Specify the number of epochs
+    SVMTraining.main(10)
+    LRTraining.main(10) 
