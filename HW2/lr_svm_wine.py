@@ -23,7 +23,7 @@ class LogisticRegressionClassifier:
 
     # Main function; running this method once is one epoch
     def main(self, X_train, X_test, y_train, y_test):
-        LRModel = LogisticRegression(penalty='l2', C=50, solver='liblinear', max_iter=100) # Creating a logistic regression model
+        LRModel = LogisticRegression(penalty='l2', C=50, solver='liblinear') # Creating a logistic regression model
         LRModel.fit(X_train, y_train) # Training the model
         LRPred = LRModel.predict(X_test) # Making predictions
         print("Accuracy:", accuracy_score(y_test, LRPred)) # Calculating accuracy
