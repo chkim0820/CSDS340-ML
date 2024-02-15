@@ -2,6 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.neighbors import NearestNeighbors
+from scipy.spatial.distance import pdist
 
 # Generating the specified number of random data points in d dimensions
 def generateRandomData(numData, d):
@@ -19,15 +21,18 @@ def hypersphereFraction(data, numPoints):
 # Measures how close a nearest neighbor is relative to a randomly selected data point
 # Mean dist. b/w a data point and its 1-nearest neighbor divided by mean dist. b/w any pair
 def meanDistance(data):
-    # Calculate pairwise distances between all data points
-    pairDistances = np.linalg.norm(data[:, np.newaxis] - data, axis=2)
-    # Mean distance between a data point and its 1-nearest neighbor
-    meanDistNN = np.mean(np.partition(pairDistances, 1, axis=1)[:, 1])
-    # Mean distance between any pair of data points
-    meanPairDist = np.mean(pairDistances[pairDistances != 0])
-    # Mean distance between a data point and its 1-nearest neighbor divided by the mean distance between any pair of data points
-    distance = meanDistNN / meanPairDist
-    return distance
+    # Find the 1 nearest neighbor for each data point
+    NNs = NearestNeighbors(n_neighbors=2).fit(data)
+    distances, indices = NNs.kneighbors(data)
+    # Extract the distance to the 1-nearest neighbor for each data point
+    NNDistances = distances[:, 1]
+    # Calculate the mean 1-nearest neighbor distance
+    meanNNDist = np.mean(NNDistances)
+    # Calculate the mean distance between any pair of data points
+    meanPairDist = np.mean(pdist(data))
+    # Calculate the mean nearest neighbor distance ratio
+    meanDistRatio = meanNNDist / meanPairDist
+    return meanDistRatio
 
 # Plot the calculated fractions within hypersphere
 def plotFractions(dimensions, fractions):
