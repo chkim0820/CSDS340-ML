@@ -30,6 +30,14 @@ class LogisticRegressionClassifier:
         print("Classification Report:\n", classification_report(y_test, LRPred))
 
 
+def svmProb4(features, output):
+    SVMModel = SVC(kernel='rbf') # Creating an SVM model
+    SVMModel.fit(features, output) # Training the model
+    SVMPred = SVMModel.predict(features) # Making predictions
+    print("Accuracy:", accuracy_score(output, SVMPred)) # Calculating accuracy
+    print("Classification Report:\n", classification_report(output, SVMPred))
+
+
 # Main function; for running the different types of models for the Wine Dataset
 if __name__ == "__main__":
     # Process the dataset
@@ -44,3 +52,12 @@ if __name__ == "__main__":
     LRTraining = LogisticRegressionClassifier()
     SVMTraining.main(X_train, X_test, y_train, y_test) # Highest accuracy achieved: 0.9858417974761465
     LRTraining.main(X_train, X_test, y_train, y_test) # Highest accuracy achieved: 0.9883040935672515
+
+    # For problem 4
+    outputClass = [1, 1, 1, 1, 2, 2, 2, 2]
+    firstFeature = [-2, 0, 0, 2, -1, 1, 0, 0]
+    secondFeature = [0, 2, -2, 0, 0, 0, 1, -1]
+    dataFor4 = pd.DataFrame({'First': firstFeature, 'Second': secondFeature, 'Output': outputClass})
+    features = dataFor4.iloc[:, :-1] # Both features
+    classes = dataFor4.iloc[:, -1] # Output class
+    svmProb4(features, classes)
