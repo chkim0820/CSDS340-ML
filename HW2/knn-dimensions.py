@@ -77,9 +77,9 @@ def plotDistances(dimensions, distances):
 if __name__ == "__main__":
     # Generate data points w/ specified dimensions
     dimensions = range(2, 11) # Dimensions: 2 to 10
-    numPoints = 1000
-    fractions = []
-    meanDistances = []
+    numPoints = 1000 # Number of data points to generate
+    fractions = [] # Stores the fractions within hypersphere
+    meanDistances = [] # Stores mean NN distances
     for d in dimensions:
         # Generate 1000 random data points in d dimensions
         data = generateRandomData(numPoints, d)
