@@ -10,23 +10,25 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 class PCA:
     # For completing each task
     def main(self, data):
+        print("\n==============PCA==============")
         # 3a) Dropping 'style' column; now excludes output
         data = data.drop('style', axis=1) # Style contains the outputs
-        print("Updated dimension of the data: ", len(data.columns))
+        print("Updated dimension of the data:\n", len(data.columns))
 
         # 3b) Standardizing the dataset
         scaler = StandardScaler()
         scaler.fit(data)
         data = scaler.transform(data)
+        print("\nStandardized Dataset:\n", data)
 
         # 3c) Constructing the covariance matrix
         covMatrix = np.cov(data, rowvar=False)
-        print("Covariance matrix: ", covMatrix)
+        print("\nCovariance matrix:\n", covMatrix)
 
         # 3d) Performing eigen-decomposition of the covariance matrix
         eigenvalues, eigenvectors = np.linalg.eig(covMatrix)
-        print("Reporting the eigenvalues:", eigenvalues, '\n', 
-              "Reporting the eigenvectors:", eigenvectors) # 12 total
+        print("\nReporting the eigenvalues:\n", eigenvalues, '\n', 
+              "Reporting the eigenvectors:\n", eigenvectors) # 12 total
         
         # 3e) Sorting the eigenvalues and selecting k=d/2 largest eigenvalues
         ind = np.argsort(eigenvalues)[::-1]
@@ -36,20 +38,22 @@ class PCA:
         k = int(len(eigenvalues) / 2)
         selectedVals = sortedVals[:k]
         selectedVectors = sortedVectors[:, :k]
-        print("Largest eigenvalues: ", selectedVals, '\n',
-              "Largest eigenvectors: ", selectedVectors)
+        print("\nLargest eigenvalues:\n", selectedVals, '\n',
+              "Largest eigenvectors:\n", selectedVectors)
         
         # 3f) Construct the projection matrix
         projMatrix = selectedVectors
-        print("Projection Matrix: ", projMatrix)
+        print("\nProjection Matrix:\n", projMatrix)
 
 # For applying dimensionality reduction using LDA
 class LDA:
     def main(self, data, outputs):
+        print("\n==============LDA==============")
         # 4a) Standardizing the d-dimensional dataset
         scaler = StandardScaler()
         scaler.fit(data)
         data = scaler.transform(data)
+        print("\nStandardized Dataset:\n", data)
 
         # 4b) Computing the d-dimensional mean vector for each class
         meanVectors = []
@@ -72,7 +76,7 @@ class LDA:
                 mean = mean.reshape(-1, 1)  # make column vector
                 classScatter += (x - mean).dot((x - mean).T)
             Sw += classScatter
-        print("Within-class Scatter Matrix", Sw)
+        print("\nWithin-class Scatter Matrix\n", Sw)
         # Constructing the between-class scatter matrix (Sb)
         overallMean = data.mean(axis=0)
         Sb = np.zeros((d, d))
@@ -81,15 +85,15 @@ class LDA:
             meanVec = meanVec.reshape(-1, 1)  # make column vector
             overallMean = overallMean.reshape(-1, 1)  # make column vector
             Sb += n * (meanVec - overallMean).dot((meanVec - overallMean).T)
-        print("Between class scatter matrix:", Sb)
+        print("\nBetween class scatter matrix:\n", Sb)
 
         # 4d) Computing the eigenvalues and vectors of the matrix
         SwInv = np.linalg.inv(Sw) # Computing the inverse of Sw
         SwInvSb = np.dot(SwInv, Sb) # Computing the matrix
         eigenvalues, eigenvectors = np.linalg.eig(SwInvSb)
-        print("\nEigenvalues of SwInvSb:")
+        print("\nEigenvalues of SwInvSb:\n")
         print(eigenvalues)
-        print("\nEigenvectors of SwInvSb:")
+        print("\nEigenvectors of SwInvSb:\n")
         print(eigenvectors)
 
         # 4e) Sorting the eigenvalues and selecting d/2 largest eigenvalues
@@ -101,12 +105,12 @@ class LDA:
         k = int(len(eigenvalues) / 2)
         selectedVals = sortedVals[:k]
         selectedVectors = sortedVectors[:, :k]
-        print("Largest eigenvalues: ", selectedVals, '\n',
-              "Largest eigenvectors: ", selectedVectors)
+        print("\nLargest eigenvalues: \n", selectedVals, '\n',
+              "\nLargest eigenvectors: \n", selectedVectors)
 
         # 4f) Constructing the projection matrix
         projMatrix = selectedVectors
-        print("Projection Matrix: ", projMatrix)
+        print("\nProjection Matrix: \n", projMatrix)
 
 
 if __name__ == "__main__":
@@ -115,8 +119,8 @@ if __name__ == "__main__":
     features = dataset.iloc[:, :-1] # All features
     classes = dataset.iloc[:, -1] # Output classes
     # Number 3
-    # pca = PCA()
-    # pca.main(dataset)
+    pca = PCA()
+    pca.main(dataset)
     # Number 4
     lda = LDA()
     lda.main(features, classes) # excluding the target label
