@@ -24,11 +24,12 @@ class PCA:
         eigenvalues, eigenvectors = np.linalg.eig(covMatrix)
         print("Reporting the eigenvalues:", eigenvalues, '\n', 
               "Reporting the eigenvectors:", eigenvectors) # 12 total
-        # 3e) Sorting the eigenvalues and selecting d/2 largest eigenvalues
+        # 3e) Sorting the eigenvalues and selecting k=d/2 largest eigenvalues
         ind = np.argsort(eigenvalues)[::-1]
         sortedVals = eigenvalues[ind]
         sortedVectors = eigenvectors[:, ind]
-        k = len(eigenvalues) / 2
+        # Selecting k = d/2 largest eigenvalues
+        k = int(len(eigenvalues) / 2)
         selectedVals = sortedVals[:k]
         selectedVectors = sortedVectors[:, :k]
         print("Largest eigenvalues: ", selectedVals, '\n',
