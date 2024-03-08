@@ -109,7 +109,7 @@ class LDA:
               "\nLargest eigenvectors: \n", selectedVectors)
 
         # 4f) Constructing the projection matrix
-        projMatrix = selectedVectors
+        projMatrix = selectedVectors[:int(len(classes) - 1)]
         print("\nProjection Matrix: \n", projMatrix)
 
 
