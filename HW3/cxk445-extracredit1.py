@@ -35,6 +35,7 @@ def ROCcurve(pred, actual):
 # Main method
 if __name__ == "__main__":
     # Generating 1000 random points between 0 and 1 & classifying
+    # Using more data points would lead to a straighter middle line
     data = np.random.rand(1000)
     predictions = randomClassifier(data)
     # 1000 random true outcomes (0 or 1)
