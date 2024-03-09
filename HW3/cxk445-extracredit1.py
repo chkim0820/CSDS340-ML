@@ -19,19 +19,17 @@ def randomClassifier(data):
             outputs.append(0) # Class 0 otherwise
     return outputs
 
-# Generating the ROC curve
+# Plotting the ROC curve for a random classifier
 def ROCcurve(pred, actual):
     # Calculate ROC curve w/ scikit-learn
     fpr, tpr, _ = roc_curve(actual, pred)
-    # Calculate area under the ROC curve (AUC)
-    area = auc(fpr, tpr)
     # Plot ROC curve
     plt.figure()
     plt.plot(fpr, tpr)
     plt.plot([0, 1], [0, 1]) # Straight middle line
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('ROC Curve')
+    plt.title('ROC Curve for a Random Classifier')
     plt.show()
 
 # Main method
