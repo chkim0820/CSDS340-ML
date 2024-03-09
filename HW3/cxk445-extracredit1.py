@@ -3,7 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve
 
 # Answering the question posted on slide 59 of L14
 # Plotting the ROC curve for a random classifier
@@ -25,8 +25,8 @@ def ROCcurve(pred, actual):
     fpr, tpr, _ = roc_curve(actual, pred)
     # Plot ROC curve
     plt.figure()
-    plt.plot(fpr, tpr)
-    plt.plot([0, 1], [0, 1]) # Straight middle line
+    plt.plot(fpr, tpr) # Plotting the ROC curve
+    plt.plot([0, 1], [0, 1]) # Straight middle line for reference
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.title('ROC Curve for a Random Classifier')
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # Generating 1000 random points between 0 and 1 & classifying
     data = np.random.rand(1000)
     predictions = randomClassifier(data)
-    # 1000 random true outcomes
+    # 1000 random true outcomes (0 or 1)
     actual = np.random.randint(0, 2, size=1000)
     # Generate a ROC curve
     ROCcurve(predictions, actual)
