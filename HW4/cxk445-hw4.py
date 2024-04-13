@@ -10,6 +10,13 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
+from sklearn.cluster import KMeans
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics import pairwise_distances_argmin_min, silhouette_score, accuracy_score
 
 
 # For homework problem 2; ensemble model bagging technique
@@ -218,17 +225,104 @@ def prob4(features, outputs):
 # For homework problem 5; OLS (linear regression) model with iris dataset
 def prob5():
     # loading iris dataset from sklearn & splitting into training/testing
-    print()
+    iris = load_iris()
+    X = pd.DataFrame(iris.data, columns=iris.feature_names)
+    y = iris.target
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # a) outputting the correlation matrix & selecting 2 features with highest correlation
+    correlation_matrix = X_train.corr()
+    correlation_with_target = correlation_matrix.abs().iloc[:-1, -1]
+    top_features = correlation_with_target.nlargest(2).index.tolist()
+    # Output the correlation matrix and selected features
+    print("Correlation Matrix:")
+    print(correlation_matrix)
+    print("\nTwo features with highest correlation with the target variable:")
+    print(top_features)
+
+    # b) training an OLS model using the 2 features; report MAE
+    X_train_selected = X_train[top_features].values.reshape(-1, 2)
+    X_test_selected = X_test[top_features].values.reshape(-1, 2)
+    ols_model = LinearRegression()
+    ols_model.fit(X_train_selected, y_train)
+    y_pred = ols_model.predict(X_test_selected)
+    # Calculate Mean Absolute Error (MAE)
+    mae = mean_absolute_error(y_test, y_pred)
+    print("Mean Absolute Error (MAE) on the testing dataset:", mae)
+
+    # c) transforming to polynomial features and training a model
+    # Transform features into polynomial features
+    degree = 2  # Quadratic
+    poly_features = PolynomialFeatures(degree=degree, include_bias=False)
+    X_train_poly = poly_features.fit_transform(X_train_selected)
+    X_test_poly = poly_features.transform(X_test_selected)
+    # Train a linear regression model on the polynomial features
+    quadratic_model = make_pipeline(PolynomialFeatures(degree=degree, include_bias=False), LinearRegression())
+    quadratic_model.fit(X_train_selected, y_train)
+    # Make predictions on the testing dataset
+    y_pred_poly = quadratic_model.predict(X_test_selected)
+    # Calculate Mean Absolute Error (MAE)
+    mae_poly = mean_absolute_error(y_test, y_pred_poly)
+    print("Mean Absolute Error (MAE) on the testing dataset (quadratic model):", mae_poly)
 
 
 # For homework problem 6; K-means clustering with two moons dataset
-def prob6():
-    print()
+def prob6(dataset):
+    # a) performing k-Means clustering
+    kmeans = KMeans(n_clusters=2, random_state=42)
+    X = dataset.iloc[:, :2]
+    y_kmeans = kmeans.fit_predict(X)
+    # Visualize the clusters
+    plt.figure(figsize=(8, 6))
+    plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=y_kmeans, cmap='viridis', marker='o', edgecolor='k')
+    plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='red', marker='X', label='Centroids')
+    plt.title('K-means Clustering of Two Moons Dataset')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.legend()
+    plt.show()
+
+    # b) Performing agglomerative hierarchical clustering
+    agg_clustering = AgglomerativeClustering(n_clusters=2)
+    y_agg = agg_clustering.fit_predict(X)
+
+    # Visualize the clusters
+    plt.figure(figsize=(8, 6))
+    plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=y_agg, cmap='viridis', marker='o', edgecolor='k')
+    plt.title('Agglomerative Hierarchical Clustering of Two Moons Dataset')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.show()
+
+    # Calculate SSE for K-means
+    sse_kmeans = kmeans.inertia_
+
+    # Calculate cluster misclassification rate for K-means
+    closest, _ = pairwise_distances_argmin_min(kmeans.cluster_centers_, X)
+    labels_kmeans = closest
+    accuracy_kmeans = accuracy_score(labels_kmeans, y)
+
+    # Calculate SSE for agglomerative hierarchical clustering
+    sse_agg = 0  # SSE is not directly available in AgglomerativeClustering
+
+    # Calculate cluster misclassification rate for agglomerative hierarchical clustering
+    accuracy_agg = accuracy_score(y_agg, y)
+
+    print("K-means:")
+    print("  SSE:", sse_kmeans)
+    print("  Cluster Misclassification Rate:", 1 - accuracy_kmeans)
+
+    print("\nAgglomerative Hierarchical Clustering:")
+    print("  SSE: Not available directly")
+    print("  Cluster Misclassification Rate:", 1 - accuracy_agg)
 
 
 if __name__ == "__main__":
-    features, outputs = prob2()
-    prob3(features, outputs)
-    prob4(features, outputs)
-    prob5()
-    prob6()
+    # For problem 6; importing twomoons dataset
+    twomoons_dataset = pd.read_csv("twomoons.csv")
+    # Each method calls lead to designated problems
+    features, outputs = prob2() # Problem 2
+    prob3(features, outputs)    # Problem 3
+    prob4(features, outputs)    # Problem 4
+    prob5()                     # Problem 5
+    prob6(twomoons_dataset)     # Problem 6
