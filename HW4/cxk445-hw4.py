@@ -271,28 +271,29 @@ def prob6(dataset):
     # a) performing k-Means clustering
     kmeans = KMeans(n_clusters=2, random_state=42)
     X = dataset.iloc[:, :2]
+    y = dataset.iloc[:, 2] 
     y_kmeans = kmeans.fit_predict(X)
     # Visualize the clusters
-    plt.figure(figsize=(8, 6))
-    plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=y_kmeans, cmap='viridis', marker='o', edgecolor='k')
-    plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='red', marker='X', label='Centroids')
-    plt.title('K-means Clustering of Two Moons Dataset')
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
-    plt.legend()
-    plt.show()
+    # plt.figure(figsize=(8, 6))
+    # plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=y_kmeans, cmap='viridis', marker='o', edgecolor='k')
+    # plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='red', marker='X', label='Centroids')
+    # plt.title('K-means Clustering of Two Moons Dataset')
+    # plt.xlabel('Feature 1')
+    # plt.ylabel('Feature 2')
+    # plt.legend()
+    # plt.show()
 
     # b) Performing agglomerative hierarchical clustering
     agg_clustering = AgglomerativeClustering(n_clusters=2)
     y_agg = agg_clustering.fit_predict(X)
 
     # Visualize the clusters
-    plt.figure(figsize=(8, 6))
-    plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=y_agg, cmap='viridis', marker='o', edgecolor='k')
-    plt.title('Agglomerative Hierarchical Clustering of Two Moons Dataset')
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
-    plt.show()
+    # plt.figure(figsize=(8, 6))
+    # plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=y_agg, cmap='viridis', marker='o', edgecolor='k')
+    # plt.title('Agglomerative Hierarchical Clustering of Two Moons Dataset')
+    # plt.xlabel('Feature 1')
+    # plt.ylabel('Feature 2')
+    # plt.show()
 
     # Calculate SSE for K-means
     sse_kmeans = kmeans.inertia_
@@ -321,8 +322,8 @@ if __name__ == "__main__":
     # For problem 6; importing twomoons dataset
     twomoons_dataset = pd.read_csv("twomoons.csv")
     # Each method calls lead to designated problems
-    features, outputs = prob2() # Problem 2
-    prob3(features, outputs)    # Problem 3
-    prob4(features, outputs)    # Problem 4
-    prob5()                     # Problem 5
+    # features, outputs = prob2() # Problem 2
+    # prob3(features, outputs)    # Problem 3
+    # prob4(features, outputs)    # Problem 4
+    # prob5()                     # Problem 5
     prob6(twomoons_dataset)     # Problem 6
