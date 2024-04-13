@@ -13,25 +13,27 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.pipeline import make_pipeline
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
-from sklearn.metrics import pairwise_distances_argmin_min, silhouette_score, accuracy_score
+from sklearn.metrics import silhouette_score, accuracy_score
+from sklearn.ensemble import BaggingClassifier
 
 
 # For homework problem 2; ensemble model bagging technique
 def prob2():
-    # a) Generating a random dataset with 20 samples (2 features & 1 binary output)
+    # a) Generating a random dataset with 20 samples (2 features & 1 output (0 or 1))
     features, outputs = make_classification(n_samples=20, n_features=2, 
                                             n_redundant=0, n_classes=2, random_state=8)
     dataset = pd.DataFrame(features, columns=['Feature1', 'Feature2'])
     dataset['Label'] = outputs # dataset contains the generated random datset
+    print("A random dataset with 20 samples:\n", dataset)
     
     # b) Generating 10 training datsets (20 samples each) by sampling with repetition
     matrix = np.zeros((10, 20), dtype=int) # As specified, the output would be a 10 x 20 matrix
     for i in range(10):
         indices = np.random.choice(a=20, size=20, replace=True)
         matrix[i, :] = indices
+    print(matrix)
     
     # c) Highlighting all duplicated entries in each training dataset
     matrix_highlighted = np.array([[np.sum(row == value) > 1 for value in row] for row in matrix])
@@ -44,14 +46,14 @@ def prob2():
     ax.set_title('Highlighted Duplicates in Each Dataset')
     ax.set_xlabel('Sample Index')
     ax.set_ylabel('Dataset Number')
-    # plt.show()
+    plt.show()
 
     # d) Training 10 classifier models on the 10 datasets
     models = []
     accuracies = []
     for i in range(10):
     # Create a new model
-        model = DecisionTreeClassifier(random_state=42)
+        model = DecisionTreeClassifier()
         X_train, X_test, y_train, y_test = train_test_split(features[matrix[i]], outputs[matrix[i]], test_size=0.2, random_state=42)
         # Train the model on the dataset
         model.fit(X_train, y_train)
@@ -62,10 +64,8 @@ def prob2():
 
     # e) Using majority voting to combine the results
     predictions = [model.predict(X_test[[0]])[0] for model in models]
-    final_prediction = max(set(predictions), key=predictions.count)
-    ensemble_predictions = [max(set([model.predict([sample])[0] for model in models]), key=[model.predict([sample])[0] for model in models].count) for sample in X_test]
-    ensemble_accuracy = accuracy_score(y_test, ensemble_predictions)
-    print("Ensemble model accuracy:", ensemble_accuracy)
+    final_prediction = np.argmax(np.bincount(predictions))
+    print("Final prediction: ", final_prediction)
     
     # returning the random generated dataset for later problems
     return features, outputs
@@ -269,7 +269,7 @@ def prob5():
     print("Mean Absolute Error (MAE) for quadratic model: ", mae_poly)
 
 
-# For calculating SSE
+# For calculating SSE; helper function
 def SSE(X, y):
     # Calculate the cluster centers
     cluster_centers = []
@@ -319,11 +319,11 @@ def prob6(dataset):
 
 
 if __name__ == "__main__":
-    # For problem 6; importing twomoons dataset
-    twomoons_dataset = pd.read_csv("twomoons.csv")
     # Each method calls lead to designated problems
-    # features, outputs = prob2() # Problem 2
+    features, outputs = prob2() # Problem 2
     # prob3(features, outputs)    # Problem 3
     # prob4(features, outputs)    # Problem 4
-    prob5()                     # Problem 5
+    # prob5()                     # Problem 5
+    # For problem 6; importing twomoons dataset
+    twomoons_dataset = pd.read_csv("twomoons.csv")
     # prob6(twomoons_dataset)     # Problem 6
