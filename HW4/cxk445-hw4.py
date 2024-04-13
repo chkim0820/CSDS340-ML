@@ -222,48 +222,51 @@ def prob4(features, outputs):
     final_prediction = np.sign(final_prediction)
 
 
-# For homework problem 5; OLS (linear regression) model with iris dataset
+# For homework problem 5; OLS (linear regression) model using iris dataset
 def prob5():
-    # loading iris dataset from sklearn & splitting into training/testing
+    # loading iris dataset from sklearn.datasets & initializing dataset
     iris = load_iris()
-    X = pd.DataFrame(iris.data, columns=iris.feature_names)
-    y = iris.target
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+    df['target'] = iris.target
 
     # a) outputting the correlation matrix & selecting 2 features with highest correlation
-    correlation_matrix = X_train.corr()
-    correlation_with_target = correlation_matrix.abs().iloc[:-1, -1]
-    top_features = correlation_with_target.nlargest(2).index.tolist()
+    # Calculate correlation matrix and two highest features
+    correlation_matrix = df.corr()
+    top_features = correlation_matrix['target'].abs().nlargest(2).index.tolist()
     # Output the correlation matrix and selected features
-    print("Correlation Matrix:")
-    print(correlation_matrix)
-    print("\nTwo features with highest correlation with the target variable:")
-    print(top_features)
+    pd.set_option('display.max_rows', None) # To show all rows and columns
+    pd.set_option('display.max_columns', None)
+    print("Correlation Matrix:\n", correlation_matrix)
+    print("\nTwo top features:", top_features)
+    pd.reset_option('display.max_rows')
+    pd.reset_option('display.max_columns')
 
-    # b) training an OLS model using the 2 features; report MAE
-    X_train_selected = X_train[top_features].values.reshape(-1, 2)
-    X_test_selected = X_test[top_features].values.reshape(-1, 2)
+    # b) training an OLS model using the selected top 2 features; report MAE
+    # Split dataframe into training/testing (80:20)
+    X = df[top_features] # Only selected features
+    y = df['target']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Train linear regression model
     ols_model = LinearRegression()
-    ols_model.fit(X_train_selected, y_train)
-    y_pred = ols_model.predict(X_test_selected)
+    ols_model.fit(X_train, y_train)
+    y_pred = ols_model.predict(X_test)
     # Calculate Mean Absolute Error (MAE)
     mae = mean_absolute_error(y_test, y_pred)
-    print("Mean Absolute Error (MAE) on the testing dataset:", mae)
+    print("Mean Absolute Error (MAE):", mae)
 
-    # c) transforming to polynomial features and training a model
+    # c) training a quadratic model by transforming 2 features in polynomial features & training LR model
     # Transform features into polynomial features
-    degree = 2  # Quadratic
-    poly_features = PolynomialFeatures(degree=degree, include_bias=False)
-    X_train_poly = poly_features.fit_transform(X_train_selected)
-    X_test_poly = poly_features.transform(X_test_selected)
-    # Train a linear regression model on the polynomial features
-    quadratic_model = make_pipeline(PolynomialFeatures(degree=degree, include_bias=False), LinearRegression())
-    quadratic_model.fit(X_train_selected, y_train)
-    # Make predictions on the testing dataset
-    y_pred_poly = quadratic_model.predict(X_test_selected)
+    poly_features = PolynomialFeatures(degree=2, include_bias=False) # degree=2 for polynomial
+    X_train_poly = poly_features.fit_transform(X_train)
+    X_test_poly = poly_features.transform(X_test)
+    # Train a linear regression model on polynomial features
+    quadratic_model = LinearRegression()
+    quadratic_model.fit(X_train_poly, y_train)
+    # Make predictions on testing dataset
+    y_pred_poly = quadratic_model.predict(X_test_poly)
     # Calculate Mean Absolute Error (MAE)
     mae_poly = mean_absolute_error(y_test, y_pred_poly)
-    print("Mean Absolute Error (MAE) on the testing dataset (quadratic model):", mae_poly)
+    print("Mean Absolute Error (MAE) for quadratic model: ", mae_poly)
 
 
 # For calculating SSE
@@ -322,5 +325,5 @@ if __name__ == "__main__":
     # features, outputs = prob2() # Problem 2
     # prob3(features, outputs)    # Problem 3
     # prob4(features, outputs)    # Problem 4
-    # prob5()                     # Problem 5
-    prob6(twomoons_dataset)     # Problem 6
+    prob5()                     # Problem 5
+    # prob6(twomoons_dataset)     # Problem 6
