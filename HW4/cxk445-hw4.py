@@ -15,6 +15,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import silhouette_score, accuracy_score
 
 
@@ -74,7 +75,9 @@ def prob2():
 def prob3(features, outputs):
     # a) a random dataset with 20 samples with relabeled outputs (-1 and 1)
     outputs[outputs == 0] = -1 # Reusing the classes from problem 4 w/ relabeled classes
-    print("Samples for problem 3:\n", features, "\n", outputs)
+    print("Random dataset for problem 3:")
+    print("Feature columns:\n", features)
+    print("Output column:\n", outputs)
 
     # b, c, d) training 10 total weak learners; output features, thresholds, and αj
     learners = [] # to store 9 weak learners
@@ -85,7 +88,7 @@ def prob3(features, outputs):
 
         # b) training a weak learner with uniform weights for samples
         # Using scikit learn's Decision Tree Classifier
-        stump = DecisionTreeClassifier(max_depth=1, random_state=42) # depth = 1 for weak learner
+        stump = DecisionTreeClassifier(max_depth=1, random_state=42) # depth = 1 for weak learner   
         # Initializing uniform weight vectors
         weights = np.ones(len(outputs)) / len(outputs) # w=0.05 for each of 20 samples
         stump.fit(features, outputs, sample_weight=weights) # Training the weak learner
@@ -123,36 +126,42 @@ def prob3(features, outputs):
 
 # For homework problem 4; gradient boosting technique of ensemble model
 def prob4(features, outputs):
-    # a) a random dataset with 20 samples; reusing from previous problems
-    print(outputs)
-    exit()
+    # a) a random dataset with 20 samples; see prob2() for code
+    print("Random dataset for problem 4:")
+    print("Feature columns:\n", features)
+    print("Output column:\n", outputs)
     
     # b) outputting the log-odds of the dataset
-    log_odds = np.log(np.divide(outputs, 1 - outputs))
-   
+    # Need the predicted output of the 0th decision tree
+    # log-odds = log(number of true samples / number of false samples)
+    tree = DecisionTreeClassifier(max_depth=2) # 0th decision tree
+    tree.fit(features, outputs)
+    predictions = tree.predict(features)
+    num_true = np.sum(predictions == 1)
+    num_false = np.sum(predictions == 0)
+    log_odds = np.log(num_true / num_false)
+    print("The log-odds of the dataset:", log_odds)
+    
     # c) calculating & outputting the residual terms for each training data
-    predictions_0th_tree = np.log(np.divide(outputs, 1 - outputs))
-    residuals = outputs - (1 / (1 + np.exp(-predictions_0th_tree)))
-    print("Residuals for each training data point:")
-    print(residuals)
+    residuals = outputs - predictions
+    print("Residuals for each training data point:", residuals)
    
     # d) fitting a decision tree to the residuals; output: γj1 for each leaf node
     # As the problem stated, the max depth of tree is fixed to 2
-    tree_residuals = DecisionTreeRegressor(max_depth=2, random_state=42)
-    tree_residuals.fit(features, residuals)
-    leaf_nodes = tree_residuals.apply(features)
-    leaf_values = {leaf: tree_residuals.tree_.value[leaf][0][0] for leaf in np.unique(leaf_nodes)}
-    print("Leaf nodes and their corresponding γj1 values:")
-    for leaf, value in leaf_values.items():
-        print(f"Leaf node {leaf}: γj1 = {value}")
-    
+    tree.fit(features, residuals)
+    leaf_nodes = tree.apply(features)
+    unique_leaf_nodes = np.unique(leaf_nodes)
+    leaf_values = {node: np.mean(residuals[leaf_nodes == node]) for node in unique_leaf_nodes}
+    print("γj1 for each leaf node:", leaf_values)
+    exit()
+
     # e) choosing at least 2 samples from each leaf node & outputting predicted values
     # Choose at least two samples from each leaf node of decision tree 1
     samples_per_leaf = {}
     for leaf in np.unique(leaf_nodes):
         samples_per_leaf[leaf] = []
     for i, x in enumerate(features):
-        leaf = tree_residuals.apply([x])[0]
+        leaf = tree.apply([x])[0]
         samples_per_leaf[leaf].append(i)
     print("Chosen samples and their predicted values for each leaf node:")
     for leaf, samples in samples_per_leaf.items():
@@ -299,7 +308,7 @@ def prob6(dataset):
 
 
 if __name__ == "__main__":
-    features, outputs = make_classification(n_samples=20, n_features=2, # DELETE
+    features, outputs = make_classification(n_samples=20, n_features=2, 
                                             n_redundant=0, n_classes=2, random_state=8)
     # Each method calls lead to designated problems
     # features, outputs = prob2() # Problem 2
