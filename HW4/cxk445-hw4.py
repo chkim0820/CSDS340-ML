@@ -266,56 +266,50 @@ def prob5():
     print("Mean Absolute Error (MAE) on the testing dataset (quadratic model):", mae_poly)
 
 
-# For homework problem 6; K-means clustering with two moons dataset
+# For calculating SSE
+def SSE(X, y):
+    # Calculate the cluster centers
+    cluster_centers = []
+    for cluster_label in np.unique(y): # For each cluster label,
+        cluster_centers.append(np.mean(X[y == cluster_label], axis=0))
+    # Calculate the sum of squared errors
+    sse = 0
+    for i in range(len(X)):
+        cluster_label = y[i]
+        center = cluster_centers[cluster_label]
+        sse += np.linalg.norm(np.array(X.iloc[i]) - np.array(center))**2
+    return sse
+
+# For homework problem 6; using clustering algorithms for two moons dataset
+# Input is the dataframe of the two moons dataset
 def prob6(dataset):
+    # Variables for features and outputs
+    X = dataset.iloc[:, :2] # features
+    y = dataset.iloc[:, 2]  # outputs; true cluster
+
     # a) performing k-Means clustering
-    kmeans = KMeans(n_clusters=2, random_state=42)
-    X = dataset.iloc[:, :2]
-    y = dataset.iloc[:, 2] 
-    y_kmeans = kmeans.fit_predict(X)
-    # Visualize the clusters
-    # plt.figure(figsize=(8, 6))
-    # plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=y_kmeans, cmap='viridis', marker='o', edgecolor='k')
-    # plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='red', marker='X', label='Centroids')
-    # plt.title('K-means Clustering of Two Moons Dataset')
-    # plt.xlabel('Feature 1')
-    # plt.ylabel('Feature 2')
-    # plt.legend()
-    # plt.show()
+    kmeans = KMeans(n_clusters=2) # specify 2 clusters
+    kmeans_pred = kmeans.fit_predict(X)
+    # calculate SSE and misclassification rate
+    # SSE (distortion):
+    sse_kmeans = kmeans.inertia_
+    print("K-means clustering SSE: ", sse_kmeans)
+    # Cluster misclassification rate (silhouette score):
+    silhouette_avg = silhouette_score(X, kmeans_pred) # misclassification rate
+    accuracy_sc = accuracy_score(kmeans_pred, y)      # accuracy score
+    print("K-means clustering misclassification rate: ", silhouette_avg)
+    print("K-means clustering accuracy score: ", accuracy_sc)
 
     # b) Performing agglomerative hierarchical clustering
     agg_clustering = AgglomerativeClustering(n_clusters=2)
-    y_agg = agg_clustering.fit_predict(X)
-
-    # Visualize the clusters
-    # plt.figure(figsize=(8, 6))
-    # plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=y_agg, cmap='viridis', marker='o', edgecolor='k')
-    # plt.title('Agglomerative Hierarchical Clustering of Two Moons Dataset')
-    # plt.xlabel('Feature 1')
-    # plt.ylabel('Feature 2')
-    # plt.show()
-
-    # Calculate SSE for K-means
-    sse_kmeans = kmeans.inertia_
-
-    # Calculate cluster misclassification rate for K-means
-    closest, _ = pairwise_distances_argmin_min(kmeans.cluster_centers_, X)
-    labels_kmeans = closest
-    accuracy_kmeans = accuracy_score(labels_kmeans, y)
-
-    # Calculate SSE for agglomerative hierarchical clustering
-    sse_agg = 0  # SSE is not directly available in AgglomerativeClustering
-
-    # Calculate cluster misclassification rate for agglomerative hierarchical clustering
-    accuracy_agg = accuracy_score(y_agg, y)
-
-    print("K-means:")
-    print("  SSE:", sse_kmeans)
-    print("  Cluster Misclassification Rate:", 1 - accuracy_kmeans)
-
-    print("\nAgglomerative Hierarchical Clustering:")
-    print("  SSE: Not available directly")
-    print("  Cluster Misclassification Rate:", 1 - accuracy_agg)
+    agg_pred = agg_clustering.fit_predict(X)
+    # Calculate SSE and misclassification rate
+    # SSE:
+    sse_agg = SSE(X, agg_pred)
+    print("Agglomerative hierarchical clustering SSE: ", sse_agg)
+    # Misclassification rate (accuracy score):
+    accuracy_agg = accuracy_score(agg_pred, y)
+    print("Agglomerative hierarchical clustering accuracy score: ", accuracy_agg)
 
 
 if __name__ == "__main__":
