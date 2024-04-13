@@ -16,7 +16,6 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics import silhouette_score, accuracy_score
-from sklearn.ensemble import BaggingClassifier
 
 
 # For homework problem 2; ensemble model bagging technique
@@ -24,14 +23,14 @@ def prob2():
     # a) Generating a random dataset with 20 samples (2 features & 1 output (0 or 1))
     features, outputs = make_classification(n_samples=20, n_features=2, 
                                             n_redundant=0, n_classes=2, random_state=8)
-    dataset = pd.DataFrame(features, columns=['Feature1', 'Feature2'])
+    dataset = pd.DataFrame(features, columns=['Feature1', 'Feature2']) # Specifying the names of feature columns
     dataset['Label'] = outputs # dataset contains the generated random datset
     print("A random dataset with 20 samples:\n", dataset)
     
     # b) Generating 10 training datsets (20 samples each) by sampling with repetition
     matrix = np.zeros((10, 20), dtype=int) # As specified, the output would be a 10 x 20 matrix
     for i in range(10):
-        indices = np.random.choice(a=20, size=20, replace=True)
+        indices = np.random.choice(a=20, size=20, replace=True) # Picking 10 numbers out of 0-19 with replacements
         matrix[i, :] = indices
     print(matrix)
     
@@ -41,7 +40,7 @@ def prob2():
     ax.imshow(matrix_highlighted, cmap="Greys", interpolation='nearest', aspect='auto')
     for i in range(matrix_highlighted.shape[0]):
         for j in range(matrix_highlighted.shape[1]):
-            text = ax.text(j, i, matrix[i, j],
+            text = ax.text(j, i, matrix[i, j], # Print each index of the above matrix
                         ha="center", va="center", color="red" if matrix_highlighted[i, j] else "black")
     ax.set_title('Highlighted Duplicates in Each Dataset')
     ax.set_xlabel('Sample Index')
@@ -63,89 +62,70 @@ def prob2():
         accuracies.append(accuracy_score(y_test, y_pred))
 
     # e) Using majority voting to combine the results
-    predictions = [model.predict(X_test[[0]])[0] for model in models]
-    final_prediction = np.argmax(np.bincount(predictions))
+    predictions = [model.predict(X_test[[0]])[0] for model in models] # Generate predictions for each classifier
+    final_prediction = np.argmax(np.bincount(predictions)) # Select the class of highest frequency (voting)
     print("Final prediction: ", final_prediction)
     
-    # returning the random generated dataset for later problems
+    # returning the random generated dataset to be used for later problems
     return features, outputs
 
 
-# For homework problem 3; ensemble model boosting technique
+# For homework problem 3; ensemble model boosting technique (AdaBoost)
 def prob3(features, outputs):
     # a) a random dataset with 20 samples with relabeled outputs (-1 and 1)
-    outputs[outputs == 0] = -1
+    outputs[outputs == 0] = -1 # Reusing the classes from problem 4 w/ relabeled classes
+    print("Samples for problem 3:\n", features, "\n", outputs)
 
-    # b) training a weak learner with uniform weights for samples
-    stump = DecisionTreeClassifier(max_depth=1, random_state=42)
-    stump.fit(features, outputs)
-    feature_index = stump.tree_.feature[0]
-    threshold = stump.tree_.threshold[0]
+    # b, c, d) training 10 total weak learners; output features, thresholds, and αj
+    learners = [] # to store 9 weak learners
+    coefficients = [] # to store 9 coefficients
+    for i in range(10):
+        # Specifies the index of the current classifier out of 10
+        print(f"Learner {i + 1}:")
 
-    # c) calculating the coefficient and updated weights
-    # Initialize weights (uniform)
-    weights = np.ones(len(outputs)) / len(outputs)
-    print("Initial weights:", weights)
-    stump = DecisionTreeClassifier(max_depth=1, random_state=42)
-    stump.fit(features, outputs, sample_weight=weights)
-    predictions = stump.predict(features)
-    error = np.sum(weights * (predictions != outputs))
-    alpha = 0.5 * np.log((1 - error) / error)  # coefficient αj
-    # Updating weights
-    weights *= np.exp(-alpha * outputs * predictions)
-    weights /= np.sum(weights)
-    print("Updated weights:", weights)
+        # b) training a weak learner with uniform weights for samples
+        # Using scikit learn's Decision Tree Classifier
+        stump = DecisionTreeClassifier(max_depth=1, random_state=42) # depth = 1 for weak learner
+        # Initializing uniform weight vectors
+        weights = np.ones(len(outputs)) / len(outputs) # w=0.05 for each of 20 samples
+        stump.fit(features, outputs, sample_weight=weights) # Training the weak learner
+        feature = stump.tree_.feature[0] # First and only split since depth = 1
+        threshold = stump.tree_.threshold[0] # Threshold also stored at index 1
+        print("The feature of the split:", feature)
+        print("The threshold of the split:", threshold)
 
-    # d) training 9 more weak learners; output feature, threshold, and αj
-    n_learners = 10
-    learners = []
-    alphas = []
-    for _ in range(n_learners):
-        # training a weak learner on the weighted dataset
-        stump = DecisionTreeClassifier(random_state=42)
-        print("Training stump with weights:", weights)
-        stump.fit(features, outputs, sample_weight=weights)
-        predictions = stump.predict(features)
-        # Calculating error and coefficient
-        error = np.sum(weights * (predictions != outputs))
-        alpha = 0.5 * np.log((1 - error) / error)
-        alphas.append(alpha)
-        # Updating weights
-        weights *= np.exp(-alpha * outputs * predictions)
-        weights /= np.sum(weights)
-        print("Updated weights:", weights)
-        learners.append((stump, alpha))
-        # Output: feature, threshold of split, and coefficient αj
-        feature_index = stump.tree_.feature[0]
-        threshold = stump.tree_.threshold[0]
-        print(f"Learner {_ + 1}:")
-        print("  Feature:", feature_index)
-        print("  Threshold:", threshold)
-        print("  Alpha:", alpha)
-        print()
+        # c) calculating the coefficient and updated weights
+        # Initializing weight vectors to uniform weights
+        predictions = stump.predict(features) # class label predictions
+        error = np.sum(weights * (predictions != outputs)) # Calculating weighted error rates
+        coefficient = 0.5 * np.log((1 - error) / error)  # coefficient αj
+        print("Coefficient:", coefficient)
+        weights = weights * np.exp(-coefficient * outputs * predictions) # Updating weights
+        weights = weights / np.sum(weights) # normalizing weights to sum of 1
+        print("Updated weights:\n", weights)
+        
+        # appending results for later use
+        coefficients.append(coefficient) # for storing the coefficient
+        learners.append(stump)
 
-    # e) predicting using each weak learner & combining results
-    # Sample test data
-    sample_test_data = features[0]  # Assuming you want to use the first sample for testing
-
-    # Initialize final prediction
-    final_prediction = 0
-
-    # Predict using each weak learner and combine with alpha
-    for learner, alpha in zip(learners, alphas):
-        model, _ = learner
-        prediction = model.predict([sample_test_data])[0]
+    # e) predicting using each weak learner & combining results using coefficients
+    example_sample = features[0] # using the first example as a sample
+    final_prediction = 0 # to store the final prediction
+    # Final prediction using each weak learner and coefficient
+    for learner, alpha in zip(learners, coefficients):
+        model = learner
+        prediction = model.predict([example_sample])[0]
         final_prediction += alpha * prediction
-
-    # Apply sign function to get the final prediction
-    final_prediction = np.sign(final_prediction)
-
+    # determines the final prediction with the sign of aggregate
+    final_prediction = np.sign(final_prediction) 
     print("Final prediction using all weak learners:", final_prediction)
 
 
 # For homework problem 4; gradient boosting technique of ensemble model
 def prob4(features, outputs):
     # a) a random dataset with 20 samples; reusing from previous problems
+    print(outputs)
+    exit()
     
     # b) outputting the log-odds of the dataset
     log_odds = np.log(np.divide(outputs, 1 - outputs))
@@ -319,11 +299,13 @@ def prob6(dataset):
 
 
 if __name__ == "__main__":
+    features, outputs = make_classification(n_samples=20, n_features=2, # DELETE
+                                            n_redundant=0, n_classes=2, random_state=8)
     # Each method calls lead to designated problems
-    features, outputs = prob2() # Problem 2
+    # features, outputs = prob2() # Problem 2
     # prob3(features, outputs)    # Problem 3
-    # prob4(features, outputs)    # Problem 4
+    prob4(features, outputs)    # Problem 4
     # prob5()                     # Problem 5
     # For problem 6; importing twomoons dataset
-    twomoons_dataset = pd.read_csv("twomoons.csv")
+    # twomoons_dataset = pd.read_csv("twomoons.csv")
     # prob6(twomoons_dataset)     # Problem 6
