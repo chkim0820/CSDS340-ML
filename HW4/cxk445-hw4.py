@@ -295,21 +295,24 @@ def prob6(dataset):
     sse_kmeans = kmeans.inertia_
     print("K-means clustering SSE: ", sse_kmeans)
     # Cluster misclassification rate (silhouette score):
-    silhouette_avg = silhouette_score(X, kmeans_pred) # misclassification rate
-    accuracy_sc = accuracy_score(kmeans_pred, y)      # accuracy score
-    print("K-means clustering misclassification rate: ", silhouette_avg)
-    print("K-means clustering accuracy score: ", accuracy_sc)
+    silhouette_kmeans = silhouette_score(X, kmeans_pred) # misclassification rate
+    accuracy_kmeans = accuracy_score(kmeans_pred, y)      # accuracy score
+    print("K-means clustering silhouette score: ", silhouette_kmeans)
+    print("K-means clustering accuracy score: ", accuracy_kmeans)
 
     # b) Performing agglomerative hierarchical clustering
-    agg_clustering = AgglomerativeClustering(n_clusters=2)
-    agg_pred = agg_clustering.fit_predict(X)
+    agg = AgglomerativeClustering(n_clusters=2)
+    agg_pred = agg.fit_predict(X)
     # Calculate SSE and misclassification rate
     # SSE:
     sse_agg = SSE(X, agg_pred)
     print("Agglomerative hierarchical clustering SSE: ", sse_agg)
     # Misclassification rate (accuracy score):
     accuracy_agg = accuracy_score(agg_pred, y)
+    silhouette_agg = silhouette_score(X, agg_pred)
+    print("Agglomerative hierarchical clustering silhouette score: ", silhouette_agg)
     print("Agglomerative hierarchical clustering accuracy score: ", accuracy_agg)
+
 
 
 if __name__ == "__main__":
