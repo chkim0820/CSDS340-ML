@@ -1,5 +1,5 @@
 # Name: Chaehyeon Kim (cxk445)
-# Description: For CSDS 340 HW 4 problems
+# Description: For CSDS 340 HW 4
 
 import pandas as pd
 import numpy as np
@@ -19,11 +19,9 @@ from sklearn.metrics import silhouette_score, accuracy_score
 
 
 # For homework problem 2; ensemble model bagging technique
-def prob2():
+def prob2(features, outputs):
     # a) Generating a random dataset with 20 samples (2 features & 1 output (0 or 1))
-    np.random.seed(42)
-    features = np.random.rand(20, 2)
-    outputs = np.random.randint(0, 2, 20)
+    # The dataset is randomly generated inside the main method (for easy reuse)
     dataset = pd.DataFrame(features, columns=['Feature1', 'Feature2']) # Specifying the names of feature columns
     dataset['Label'] = outputs # dataset contains the generated random datset
     print("A random dataset with 20 samples:\n", dataset)
@@ -33,7 +31,7 @@ def prob2():
     for i in range(10):
         indices = np.random.choice(a=20, size=20, replace=True) # Picking 10 numbers out of 0-19 with replacements
         matrix[i, :] = indices
-    print(matrix)
+    print("Matrix of generated samples:\n", matrix)
     
     # c) Highlighting all duplicated entries in each training dataset
     matrix_highlighted = np.array([[np.sum(row == value) > 1 for value in row] for row in matrix])
@@ -125,11 +123,12 @@ def prob3(features, outputs):
 
 
 # For homework problem 4; gradient boosting technique of ensemble model
-def prob4(features, outputs):
+def prob4():
     # Defining variables for part g
     learning_rate = 0.1 # as given in the problem
     gamma_example = [] # saves gamma values for the first sample through iterations
     y_new = 0 # the first predicted output for the first example
+
     # a) a random dataset with 20 samples with correct outputs (0 and 1)
     np.random.seed(42)
     features = np.random.rand(20, 2)
@@ -303,15 +302,14 @@ def prob6(dataset):
     print("Agglomerative hierarchical clustering accuracy score: ", accuracy_agg)
 
 
-
 if __name__ == "__main__":
     features, outputs = make_classification(n_samples=20, n_features=2, 
                                             n_redundant=0, n_classes=2, random_state=8)
     # Each method calls lead to designated problems
-    # features, outputs = prob2() # Problem 2
-    # prob3(features, outputs)    # Problem 3
-    prob4(features, outputs)    # Problem 4
-    # prob5()                     # Problem 5
+    prob2(features, outputs) # Problem 2
+    prob3(features, outputs) # Problem 3
+    prob4()                  # Problem 4
+    prob5()                  # Problem 5
     # For problem 6; importing twomoons dataset
-    # twomoons_dataset = pd.read_csv("twomoons.csv")
-    # prob6(twomoons_dataset)     # Problem 6
+    twomoons_dataset = pd.read_csv("twomoons.csv")
+    prob6(twomoons_dataset)     # Problem 6
