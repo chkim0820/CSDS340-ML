@@ -15,15 +15,15 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import silhouette_score, accuracy_score
 
 
 # For homework problem 2; ensemble model bagging technique
 def prob2():
     # a) Generating a random dataset with 20 samples (2 features & 1 output (0 or 1))
-    features, outputs = make_classification(n_samples=20, n_features=2, 
-                                            n_redundant=0, n_classes=2, random_state=8)
+    np.random.seed(42)
+    features = np.random.rand(20, 2)
+    outputs = np.random.randint(0, 2, 20)
     dataset = pd.DataFrame(features, columns=['Feature1', 'Feature2']) # Specifying the names of feature columns
     dataset['Label'] = outputs # dataset contains the generated random datset
     print("A random dataset with 20 samples:\n", dataset)
@@ -126,89 +126,86 @@ def prob3(features, outputs):
 
 # For homework problem 4; gradient boosting technique of ensemble model
 def prob4(features, outputs):
-    # a) a random dataset with 20 samples; see prob2() for code
-    print("Random dataset for problem 4:")
+    # Defining variables for part g
+    learning_rate = 0.1 # as given in the problem
+    gamma_example = [] # saves gamma values for the first sample through iterations
+    y_new = 0 # the first predicted output for the first example
+    # a) a random dataset with 20 samples with correct outputs (0 and 1)
+    np.random.seed(42)
+    features = np.random.rand(20, 2)
+    outputs = np.random.randint(0, 2, 20)
+    print("Random dataset for problem 3:")
     print("Feature columns:\n", features)
     print("Output column:\n", outputs)
-    
-    # b) outputting the log-odds of the dataset
-    # Need the predicted output of the 0th decision tree
-    # log-odds = log(number of true samples / number of false samples)
-    tree = DecisionTreeClassifier(max_depth=2) # 0th decision tree
-    tree.fit(features, outputs)
-    predictions = tree.predict(features)
-    num_true = np.sum(predictions == 1)
-    num_false = np.sum(predictions == 0)
-    log_odds = np.log(num_true / num_false)
-    print("The log-odds of the dataset:", log_odds)
-    
-    # c) calculating & outputting the residual terms for each training data
-    residuals = outputs - predictions
-    print("Residuals for each training data point:", residuals)
-   
-    # d) fitting a decision tree to the residuals; output: γj1 for each leaf node
-    # As the problem stated, the max depth of tree is fixed to 2
-    tree.fit(features, residuals)
+
+    # b) outputting log-odds of the dataset; yi
+    # Calculating log-odds: log(num true samples / num all)
+    num_true = np.sum(outputs==1)
+    prob = np.sum(outputs==1) / len(outputs) # pi
+    log_odds = np.log(num_true / (len(outputs) - num_true)) # yi
+    y_new = log_odds # saving log-odds as the first predicted output
+    print("Log-odds of the dataset:", log_odds)
+
+    # c) calculating the residuals; yi - pi (actual - predicted)
+    # Set all of the samples' predicted outputs as the log odds
+    residuals = []
+    for i in range(20):
+        residual = outputs[i] - prob
+        residuals.append(residual)
+    residuals = np.array(residuals)
+    print("Residual terms:", residuals)
+
+    # d) fitting to the residuals & outputting γj1 for each leaf node
+    tree = DecisionTreeRegressor(max_depth=2, random_state=1) # max depth set to 2
+    tree.fit(features, residuals) # fitting the model to residuals
+    # Calculating γj1
     leaf_nodes = tree.apply(features)
-    unique_leaf_nodes = np.unique(leaf_nodes)
-    leaf_values = {node: np.mean(residuals[leaf_nodes == node]) for node in unique_leaf_nodes}
-    print("γj1 for each leaf node:", leaf_values)
-    exit()
+    gamma_values = []
+    for leaf in leaf_nodes:
+        num_samples = np.sum(tree.apply(features)==leaf) # number of samples in leaf
+        sum_residuals = np.sum(residuals[tree.apply(features)==leaf])
+        gamma = sum_residuals / (prob * (1 - prob)) * num_samples
+        gamma_values.append(gamma)
+    gamma_example.append(gamma_values[0])
+    print("γj1 values:\n", gamma_values)
 
-    # e) choosing at least 2 samples from each leaf node & outputting predicted values
-    # Choose at least two samples from each leaf node of decision tree 1
-    samples_per_leaf = {}
-    for leaf in np.unique(leaf_nodes):
-        samples_per_leaf[leaf] = []
-    for i, x in enumerate(features):
-        leaf = tree.apply([x])[0]
-        samples_per_leaf[leaf].append(i)
-    print("Chosen samples and their predicted values for each leaf node:")
-    for leaf, samples in samples_per_leaf.items():
-        chosen_samples = samples[:2]  # Choose at least two samples from each leaf node
-        for sample_idx in chosen_samples:
-            sample = features[sample_idx]
-            predicted_value = tree_residuals.predict([sample])[0]
-            print(f"Leaf node {leaf}, Sample {sample_idx}: Predicted value = {predicted_value}")
+    # e) choosing at least two samples from each leaf node; output predicted values
+    leaf_samples = {}
+    for leaf in set(leaf_nodes): # set method for running once per leaf node
+        leaf_samples[leaf] = features[leaf_nodes == leaf][:2]  # Selecting 2 samples
+        print(f"Two selected samples for leaf{leaf}: ", leaf_samples[leaf])
+        predictions = tree.predict(np.array(leaf_samples[leaf])) # all predictions
+        print("Predictions:", predictions)
+    predictions = tree.predict(features) # setting up for part f
+    # Updating with proper learning rates
+    for i in range(len(predictions)):
+        predictions[i] += learning_rate * gamma_values[leaf_nodes[i]]
 
-    # f) continuing the process & training 9 more decision trees
-    # for each decision tree, output the values corresponding to the leaf node
-    # Initialize residuals for the first iteration
-    residuals_k = residuals.copy()
+    # f) Train 9 more decision trees and output γjk values
+    for i in range(2, 11):
+        # Residuals; yi - pi
+        residuals = outputs - predictions # defining residual terms
+        tree.fit(features, residuals) # fitting new model to residuals
+        # Calculating γj1
+        leaf_nodes = tree.apply(features) # getting leaf indeces
+        gamma_values = []
+        for leaf in leaf_nodes:
+            num_samples = np.sum(tree.apply(features)==leaf) # number of samples in leaf
+            sum_residuals = np.sum(residuals[tree.apply(features)==leaf]) # sum of residuals
+            sum_probs = np.sum(predictions[tree.apply(features==leaf)])
+            gamma = sum_residuals / sum_probs * num_samples # gamma of current leaf
+            gamma_values.append(gamma)
+        print("γj1 values:\n", gamma_values)
+        gamma_example.append(gamma_values[0])
+        # Updating with proper learning rates
+        predictions = tree.predict(features)
+        for i in range(len(predictions)):
+            predictions[i] += learning_rate * gamma_values[leaf_nodes[i]]
 
-    # Train 9 more decision trees
-    for k in range(1, 10):
-        # Fit a decision tree to the residuals
-        tree_residuals_k = DecisionTreeRegressor(max_depth=2, random_state=42)
-        tree_residuals_k.fit(X, residuals_k)
-
-        # Get the leaf nodes and their corresponding values (γjk)
-        leaf_nodes_k = tree_residuals_k.apply(X)
-        leaf_values_k = {leaf: tree_residuals_k.tree_.value[leaf][0][0] for leaf in np.unique(leaf_nodes_k)}
-
-        # Output the leaf nodes and their corresponding values for decision tree k
-        print(f"Decision Tree {k} - Leaf nodes and their corresponding γjk values:")
-        for leaf, value in leaf_values_k.items():
-            print(f"  Leaf node {leaf}: γjk = {value}")
-
-        # Update residuals for the next iteration
-        residuals_k = residuals_k - tree_residuals_k.predict(X)
-
-        # If residuals are all zeros, break the loop
-        if np.all(residuals_k == 0):
-            print("All residuals are zero. Stopping the process.")
-            break
-
-    # g) predicting using the deciison trees combined
-    # Sample test data (example sample)
-    sample_test_data = features[0]
-    final_prediction = 0
-    for k in range(10):
-        tree_residuals_k = DecisionTreeRegressor(max_depth=2, random_state=42)
-        tree_residuals_k.fit(features, residuals_k)
-        prediction_k = tree_residuals_k.predict([sample_test_data])[0]
-        final_prediction += prediction_k
-    final_prediction = np.sign(final_prediction)
+    # g) Predict using the decision trees and combine their results
+    # Choosing the first sample as an example
+    final_prediction = y_new + learning_rate * np.sum(gamma_example)
+    print("The final prediction after combining results: ", final_prediction)
 
 
 # For homework problem 5; OLS (linear regression) model using iris dataset
