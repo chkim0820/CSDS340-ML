@@ -133,7 +133,7 @@ def prob4():
     np.random.seed(42)
     features = np.random.rand(20, 2)
     outputs = np.random.randint(0, 2, 20)
-    print("Random dataset for problem 3:")
+    print("Random dataset for problem 4:")
     print("Feature columns:\n", features)
     print("Output column:\n", outputs)
 
@@ -166,7 +166,7 @@ def prob4():
         gamma = sum_residuals / (prob * (1 - prob)) * num_samples
         gamma_values.append(gamma)
     gamma_example.append(gamma_values[0])
-    print("γj1 values:\n", gamma_values)
+    print("gamma values:\n", np.unique(gamma_values)) # Only show once for each node
 
     # e) choosing at least two samples from each leaf node; output predicted values
     leaf_samples = {}
@@ -185,7 +185,7 @@ def prob4():
         # Residuals; yi - pi
         residuals = outputs - predictions # defining residual terms
         tree.fit(features, residuals) # fitting new model to residuals
-        # Calculating γj1
+        # Calculating γjk
         leaf_nodes = tree.apply(features) # getting leaf indeces
         gamma_values = []
         for leaf in leaf_nodes:
@@ -194,7 +194,7 @@ def prob4():
             sum_probs = np.sum(predictions[tree.apply(features==leaf)])
             gamma = sum_residuals / sum_probs * num_samples # gamma of current leaf
             gamma_values.append(gamma)
-        print("γj1 values:\n", gamma_values)
+        print(f"{i}th gamma values:\n", np.unique(gamma_values))
         gamma_example.append(gamma_values[0])
         # Updating with proper learning rates
         predictions = tree.predict(features)
